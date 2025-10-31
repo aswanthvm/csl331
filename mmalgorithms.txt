@@ -1,0 +1,207 @@
+cpu scheduling Algorithms:
++++++++++++++++++++++++
+fcfs
+=====
+1. Sort all processes in order of increasing at.
+2. Set current_time = 0
+
+3. For each process i:
+      if (current_time < at[i])
+           current_time = at[i]
+      ct[i] = current_time + bt[i]
+      current_time = ct[i]
+      tat[i] = ct[i] - at[i]
+      wt[i] = tat[i] - bt[i]
+
+4. Compute:
+      avg_tat = Σ(tat[i]) / n
+      avg_wt  = Σ(wt[i]) / n
+------------------------------------------------------------------------------
+
+sjf
+====
+1. Initialize current_time = 0
+2. Mark all processes as not completed.
+
+3. While (all processes not completed):
+      Select process i such that:
+           - at[i] ≤ current_time
+           - bt[i] is the smallest among available processes
+      current_time = current_time + bt[i]
+      ct[i] = current_time
+      tat[i] = ct[i] - at[i]
+      wt[i] = tat[i] - bt[i]
+      Mark process i as completed.
+4. Calculate avg_tat and avg_wt.
+----------------------------------------------------------------------------
+
+round robin
+===========
+1. Input TQ (time quantum)
+2. Initialize remaining_time[i] = bt[i]
+   current_time = 0
+
+3. While (some remaining_time[i] > 0):
+      For each process i:
+           if (at[i] ≤ current_time and remaining_time[i] > 0):
+                if (remaining_time[i] > TQ):
+                     current_time = current_time + TQ
+                     remaining_time[i] -= TQ
+                else:
+                     current_time = current_time + remaining_time[i]
+                     remaining_time[i] = 0
+                     ct[i] = current_time
+4. Calculate:
+      tat[i] = ct[i] - at[i]
+      wt[i] = tat[i] - bt[i]
+      avg_tat = Σ(tat[i]) / n
+      avg_wt  = Σ(wt[i]) / n
+-----------------------------------------------------------------------------
+Priority scheduling
+===================
+1. Sort processes by priority (ascending order of pr).
+2. Set current_time = 0
+
+3. For each process i in sorted order:
+      if (current_time < at[i])
+           current_time = at[i]
+      ct[i] = current_time + bt[i]
+      current_time = ct[i]
+      tat[i] = ct[i] - at[i]
+      wt[i] = tat[i] - bt[i]
+
+4. Compute avg_tat and avg_wt.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+disk scheduling Algorithms
+++++++++++++++++++++++++++
+Algorithm FIFO
+
+1. Start
+2. Input n                // Number of disk requests
+3. Input requests[0..n-1] // Disk request queue
+4. Input head             // Initial head position
+5. Initialize total = 0, current = head
+6. Print initial head position
+
+7. For i = 0 to n-1 do
+      a. Move head to requests[i]
+      b. Add abs(current - requests[i]) to total
+      c. Update current = requests[i]
+      d. Print current head position
+
+8. Print total head movement
+9. End
+
+-----------------------------------------------------------
+SCAN Disk Scheduling Algorithm – Numbered Steps
+
+Algorithm SCAN
+
+1. Start
+2. Input n                // Number of disk requests
+3. Input requests[0..n-1] // Disk request queue
+4. Input head             // Initial head position
+5. Input direction        // 'l' for left, 'r' for right
+6. Sort requests[] in ascending order
+7. Print initial head position
+
+8. If direction = 'r' then
+      a. Serve requests >= head in ascending order
+      b. Move head to end of disk (e.g., 199)
+      c. Serve remaining requests < head in descending order
+
+9. Else if direction = 'l' then
+      a. Serve requests <= head in descending order
+      b. Move head to start of disk (0)
+      c. Serve remaining requests > head in ascending order
+
+10. Calculate total head movement
+11. Print sequence of head movements
+12. Print total head movement
+13. End
+--------------------------------------------------------------
+Algorithm C-SCAN
+
+1. Start
+2. Input n                // Number of disk requests
+3. Input requests[0..n-1] // Disk request queue
+4. Input head             // Initial head position
+5. Input direction        // 'l' for left, 'r' for right
+6. Sort requests[] in ascending order
+7. Print head position
+
+8. If direction = 'r' then
+      a. Serve requests >= head in ascending order
+      b. Move head to end of disk (e.g., 199)
+      c. Jump to start of disk (0)
+      d. Serve remaining requests < head in ascending order
+
+9. Else if direction = 'l' then
+      a. Serve requests <= head in descending order
+      b. Move head to start of disk (0)
+      c. Jump to end of disk (e.g., 199)
+      d. Serve remaining requests > head in descending order
+
+10. Calculate total head movement
+11. Print sequence of head movements
+12. Print total head movement
+13. End
+--------------------------------------------------------------
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+page replacement Algorithm
+fifo
+1. Start
+2. Input n                // Number of pages
+3. Input pages[0..n-1]    // Page reference string
+4. Initialize empty frames (size = 3)
+5. page_faults = 0
+6. For i = 0 to n-1 do
+      a. If pages[i] is in frames then
+            i. Do nothing
+      b. Else
+            i. Replace the oldest page in frames with pages[i] (FIFO)
+            ii. Increment page_faults
+      c. Display current frames
+7. Print total page_faults
+8. End
+-------------------------------------------------------------------
+LRU
+1. Start
+2. Input n                // Number of pages
+3. Input pages[0..n-1]    // Page reference string
+4. Initialize empty frames (size = 3) and last_used_time array
+5. page_faults = 0, time = 0
+6. For i = 0 to n-1 do
+      a. If pages[i] is in frames then
+            i. Update last_used_time for this page
+      b. Else
+            i. If empty frame exists, place page in it
+           ii. Else, replace the page with the oldest last_used_time
+            iii. Increment page_faults
+      c. Increment time
+      d. Display current frames
+7. Print total page_faults
+8. End
+--------------------------------------------------------------------
+lfu
+1. Start
+2. Input n                // Number of pages
+3. Input pages[0..n-1]    // Page reference string
+4. Initialize empty frames (size = 3), frequency array, and time array
+5. page_faults = 0, current_time = 0
+6. For i = 0 to n-1 do
+      a. If pages[i] is in frames then
+            i. Increment its frequency
+           ii. Update time to current_time
+      b. Else
+            i. If empty frame exists, place page in it, frequency = 1, time = current_time
+           ii. Else, replace page with lowest frequency
+                - If tie, replace the oldest (smallest time)
+            iii. Increment page_faults
+      c. Increment current_time
+      d. Display current frames
+7. Print total page_faults
+8. End
+
+
+

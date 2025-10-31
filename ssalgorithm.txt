@@ -1,0 +1,201 @@
+Algorithm: Absolute Loader
+
+Start
+    Read Header record
+    Verify program name and length
+    Read first Text record
+
+    while record type ≠ 'E' do
+    begin
+        if object code is in character form then
+            convert it into internal (machine) representation
+        
+        Move object code to specified location in memory
+        
+        Read next object program record
+    end
+
+    Jump to address specified in End record
+End
+
+-------------------------------------------------------------------------------------
+Algorithm: Relocating Loader
+
+Start
+    Get PROGADDR from OS   // Program starting address
+
+    while not end of input do
+    begin
+        Read next input record
+        
+        while record type ≠ 'E' do  // Until the End record
+        begin
+            Read next input record
+            
+            while record type = 'T' do  // Text record
+            begin
+                Move object code from record 
+                to memory location = PROGADDR + specified address
+            end
+            
+            while record type = 'M' do  // Modification record
+            begin
+                Add PROGADDR to the value at 
+                (PROGADDR + specified address)
+            end
+        end
+    end
+End
+------------------------------------------------------------------------------
+PASS 1 ALGORITHM
+
+Start
+
+1. Initialize
+
+   Open the following files:
+     - input.txt       → source program
+     - optab.txt       → operation code table
+     - symtab.txt      → symbol table (to write labels and addresses)
+     - intermediate.txt → intermediate file
+     - length.txt      → to store program length
+
+   Initialize LOCCTR = 0
+
+2. Read first line from input.txt
+
+   If opcode == "START"
+      → Set LOCCTR = operand (starting address)
+      → Write this line to intermediate.txt
+      → start_address = LOCCTR
+   Else
+      → LOCCTR = 0
+      → start_address = 0
+
+3. Read next line from input.txt
+
+4. Repeat until opcode == "END"
+
+      Write current line with LOCCTR to intermediate.txt
+
+      If label exists (label ≠ "**")
+         → Add (label, LOCCTR) to symtab.txt
+
+      Search optab.txt for the opcode
+
+      If opcode found in optab.txt
+         → LOCCTR = LOCCTR + 3
+      Else if opcode == "WORD"
+         → LOCCTR = LOCCTR + 3
+      Else if opcode == "RESW"
+         → LOCCTR = LOCCTR + (3 * operand)
+      Else if opcode == "BYTE"
+         → LOCCTR = LOCCTR + 1
+      Else if opcode == "RESB"
+         → LOCCTR = LOCCTR + operand
+
+      Read next line from input.txt
+
+5. After END statement
+
+      Write END line to intermediate.txt
+      Program Length = LOCCTR - start_address
+      Write program length to length.txt
+
+6. Display results
+
+      Show contents of:
+         - input.txt
+         - intermediate.txt
+         - symtab.txt
+      Display Program Length
+
+7. Close all files
+
+End
+-----------------------------------------------------------------------------
+PASS 2 ALGORITHM
+
+Start
+
+1. Define variables for various program components:
+   a. a             → Array to store characters
+   b. ad            → Array to store temporary characters during conversion
+   c. label, opcode, operand → Strings to store program information
+   d. symbol        → String to store symbol table entries
+   e. start, diff, i, address, add, len, actual_len, finaddr, prevaddr, j → Integers for calculations
+   f. mnemonic      → 2D array to store mnemonic codes
+   g. code          → 2D array to store corresponding machine codes
+
+2. Open the following files:
+   a. output.txt       → For writing the assembled program
+   b. symtab.txt       → For reading the symbol table
+   c. intermediate.txt → For reading the intermediate code
+   d. objcode.txt      → For writing the object code
+
+3. Read the first line from intermediate.txt
+
+4. Loop until opcode == "END"
+      a. Update prevaddr with current address
+      b. Read the next line from intermediate.txt
+
+5. Set finaddr to the final address
+
+6. Close and reopen intermediate.txt
+
+7. Read the first line again
+
+8. If opcode == "START"
+      a. Write the line to output.txt
+      b. Write the Header Record to objcode.txt with (label, start address, final address)
+      c. Read the next line
+      d. Calculate difference between current address and start address
+      e. Write the Text Record to objcode.txt with (address, difference, opcode)
+
+9. For each remaining line
+      a. Check the opcode type:
+
+         i.  If opcode == "BYTE"
+             → Write the line to output.txt
+             → Extract actual length from operand
+             → Write Text Record to objcode.txt with (address, length, operand data in hexadecimal)
+
+         ii. If opcode == "WORD"
+             → Write the line to output.txt
+             → Convert operand to decimal integer and store in variable ‘a’
+             → Write line to output.txt with converted integer
+             → Write Text Record to objcode.txt with (address, converted integer in hexadecimal)
+
+         iii. If opcode == "RESB" or "RESW"
+              → Write the line to output.txt
+
+         iv. For other opcodes
+             → Find the matching mnemonic and machine code in arrays (mnemonic[], code[])
+             → If operand == "COPY"
+                  → Write the line to output.txt with corresponding machine code appended
+                  → Write Text Record to objcode.txt with (address, opcode, "0000" in hexadecimal)
+             → Else
+                  → Read symtab.txt until operand matches a symbol
+                  → Store the corresponding address in ‘add’
+                  → Write the line to output.txt with machine code and hexadecimal address
+                  → Write Text Record to objcode.txt with (address, opcode, address in hexadecimal)
+
+10. Write the last line ("END") to output.txt
+
+11. Write the End Record to objcode.txt with the start address
+
+12. Close all open files
+
+13. Call the display function to show contents of:
+        - intermediate.txt
+        - symtab.txt
+        - output.txt
+        - objcode.txt
+
+14. Display function:
+        a. Open all four files
+        b. Read and print contents to console
+        c. Close all files
+        d. Return
+
+End
